@@ -5,7 +5,10 @@ import { deleteBooking } from "../_lib/actions";
 
 import { useOptimistic } from "react";
 
-function ReservationList({ bookings }) {
+function ReservationList({ bookings, reviewedIds = [] }) {
+  // 传进来的是数组（服务端 → 客户端的 props 必须可序列化，Set 不行）
+  const reviewed = new Set(reviewedIds.map(Number));
+
   const [optimisticBookings, optimisticDelete] = useOptimistic(
     bookings,
     (curBookings, bookingId) => {
@@ -24,6 +27,7 @@ function ReservationList({ bookings }) {
         <ReservationCard
           booking={booking}
           onDelete={handleDelete}
+          hasReviewed={reviewed.has(Number(booking.id))}
           key={booking.id}
         />
       ))}

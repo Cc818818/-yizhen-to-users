@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { PencilSquareIcon } from "@heroicons/react/24/solid";
+import { PencilSquareIcon, StarIcon } from "@heroicons/react/24/solid";
 import { format, formatDistance, isPast, isToday, parseISO } from "date-fns";
 import DeleteReservation from "./DeleteReservation";
 
@@ -9,7 +9,7 @@ export const formatDistanceFromNow = (dateStr) =>
     addSuffix: true,
   }).replace("about ", "");
 
-function ReservationCard({ booking, onDelete }) {
+function ReservationCard({ booking, onDelete, hasReviewed = false }) {
   const {
     id,
     guestId,
@@ -82,6 +82,24 @@ function ReservationCard({ booking, onDelete }) {
             </Link>
             <DeleteReservation bookingId={id} onDelete={onDelete} />
           </>
+        ) : isPast(endDate) ? (
+          hasReviewed ? (
+            <Link
+              href={`/account/reviews/${id}`}
+              className="group flex items-center gap-2 uppercase text-xs font-bold text-primary-300 flex-grow px-3 hover:bg-accent-600 transition-colors hover:text-primary-900"
+            >
+              <StarIcon className="h-5 w-5 text-accent-500 group-hover:text-primary-800 transition-colors" />
+              <span className="mt-1">Reviewed</span>
+            </Link>
+          ) : (
+            <Link
+              href={`/account/reviews/${id}`}
+              className="group flex items-center gap-2 uppercase text-xs font-bold text-primary-300 flex-grow px-3 hover:bg-accent-600 transition-colors hover:text-primary-900"
+            >
+              <StarIcon className="h-5 w-5 text-primary-600 group-hover:text-primary-800 transition-colors" />
+              <span className="mt-1">Review</span>
+            </Link>
+          )
         ) : null}
       </div>
     </div>

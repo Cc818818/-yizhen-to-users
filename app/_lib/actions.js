@@ -4,14 +4,17 @@ import { auth, signIn, signOut } from "./auth";
 import { differenceInDays } from "date-fns";
 import {
   getBookings,
+  getBooking,
   getBookedDatesByCabinId,
   getCabinPrice,
   getCouponContext,
+  getReviewByBookingId,
   getSettings,
 } from "./data-service";
 import { computeStayPrice } from "./pricing";
 import { validateCoupon } from "./coupons";
 import { findConflictDays, toDayKey } from "./date-conflicts";
+import { canReview, calcRatingStats } from "./reviews";
 import { isValidNationalID, NATIONAL_ID_HINT } from "./validation";
 import { supabase } from "./supabase";
 import { revalidatePath } from "next/cache";
@@ -270,6 +273,86 @@ export async function updateBooking(formData) {
   revalidatePath("/account/reservations");
 
   // 7) Redirecting
+  redirect("/account/reservations");
+}
+
+/**
+ * 重算并写回某间小屋的评分统计。
+ *
+ * 冗余存 avgRating / reviewCount 是为了列表页读取快，
+ * 代价就是每次写评价都得同步一次——所以它和插入评价放在同一个 action 里，
+ * 一起成功或一起失败。
+ */
+async function recalcCabinRating(cabinId) {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("cabinId", cabinId);
+
+  if (error) {
+    console.error(error);
+    throw new Error("评分统计失败");
+  }
+
+  const { avgRating, reviewCount } = calcRatingStats(
+    (data ?? []).map((row) => row.rating)
+  );
+
+  const { error: updateError } = await supabase
+    .from("cabins")
+    .update({ avgRating, reviewCount })
+    .eq("id", cabinId);
+
+  if (updateError) {
+    console.error(updateError);
+    throw new Error("评分同步失败");
+  }
+}
+
+export async function createReview(formData) {
+  const session = await auth();
+  if (!session) throw new Error("You must be logged in");
+
+  const bookingId = Number(formData.get("bookingId"));
+  const rating = Number(formData.get("rating"));
+  const comment = String(formData.get("comment") ?? "")
+    .trim()
+    .slice(0, 1000);
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5)
+    throw new Error("请选择 1 到 5 星");
+
+  const booking = await getBooking(bookingId);
+  const existing = await getReviewByBookingId(bookingId);
+
+  // 三条判断（存在 / 是你的 / 已退房 / 没评过）全部走共用纯函数，
+  // 和页面上"显示不显示写评价按钮"用的是同一份规则
+  const check = canReview({
+    booking,
+    guestId: session.user.guestId,
+    hasReviewed: Boolean(existing),
+  });
+
+  if (!check.ok) throw new Error(check.reason);
+
+  const { error } = await supabase.from("reviews").insert([
+    {
+      bookingId,
+      guestId: session.user.guestId,
+      cabinId: booking.cabinId,
+      rating,
+      comment: comment || null,
+    },
+  ]);
+
+  if (error) throw new Error("评价提交失败，请稍后重试");
+
+  await recalcCabinRating(booking.cabinId);
+
+  revalidatePath("/account/reservations");
+  revalidatePath("/cabins");
+  revalidatePath(`/cabins/${booking.cabinId}`);
+
   redirect("/account/reservations");
 }
 

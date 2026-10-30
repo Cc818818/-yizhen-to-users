@@ -44,7 +44,9 @@ export async function getCabinPrice(id) {
 export const getCabins = async function () {
   const { data, error } = await supabase
     .from("cabins")
-    .select("id, name, maxCapacity, regularPrice, discount, image")
+    .select(
+      "id, name, maxCapacity, regularPrice, discount, image, avgRating, reviewCount"
+    )
     .order("name");
 
   // For testing
@@ -220,6 +222,54 @@ export async function getCouponContext({ code, guestId }) {
     usedByGuest: Boolean(mine),
     isFirstBooking: (bookingCount ?? 0) === 0,
   };
+}
+
+/** 当前用户已经评价过哪些订单（只要 id，够列表判断用了） */
+export async function getReviewedBookingIds(guestId) {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("bookingId")
+    .eq("guestId", guestId);
+
+  if (error) {
+    console.error(error);
+    throw new Error("评价记录读取失败");
+  }
+
+  return new Set((data ?? []).map((row) => Number(row.bookingId)));
+}
+
+/** 查某笔订单有没有被评价过（有就带出内容，用于"查看我的评价"） */
+export async function getReviewByBookingId(bookingId) {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, rating, comment, created_at")
+    .eq("bookingId", bookingId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    throw new Error("评价查询失败");
+  }
+
+  return data;
+}
+
+/** 一间小屋的评价列表，最新的在前（评价人信息从 guests 关联取最新值） */
+export async function getCabinReviews(cabinId, limit = 5) {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, rating, comment, created_at, guests(fullName, countryFlag)")
+    .eq("cabinId", cabinId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error(error);
+    throw new Error("评价读取失败");
+  }
+
+  return data ?? [];
 }
 
 /////////////

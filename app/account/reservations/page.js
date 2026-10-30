@@ -1,6 +1,6 @@
 import ReservationList from "@/app/_components/ReservationList";
 import { auth } from "@/app/_lib/auth";
-import { getBookings } from "@/app/_lib/data-service";
+import { getBookings, getReviewedBookingIds } from "@/app/_lib/data-service";
 
 export const metadata = {
   title: "Reservations",
@@ -8,7 +8,10 @@ export const metadata = {
 
 export default async function Page() {
   const session = await auth();
-  const bookings = await getBookings(session.user.guestId);
+  const [bookings, reviewedIds] = await Promise.all([
+    getBookings(session.user.guestId),
+    getReviewedBookingIds(session.user.guestId),
+  ]);
 
   return (
     <div>
@@ -24,7 +27,7 @@ export default async function Page() {
           </a>
         </p>
       ) : (
-        <ReservationList bookings={bookings} />
+        <ReservationList bookings={bookings} reviewedIds={[...reviewedIds]} />
       )}
     </div>
   );

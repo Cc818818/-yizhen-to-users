@@ -3,7 +3,16 @@ import Link from "next/link";
 import { UsersIcon } from "@heroicons/react/24/solid";
 
 function CabinCard({ cabin }) {
-  const { id, name, maxCapacity, regularPrice, discount, image } = cabin;
+  const {
+    id,
+    name,
+    maxCapacity,
+    regularPrice,
+    discount,
+    image,
+    avgRating,
+    reviewCount,
+  } = cabin;
 
   return (
     <div className="flex border-primary-800 border">
@@ -21,6 +30,17 @@ function CabinCard({ cabin }) {
           <h3 className="text-accent-500 font-semibold text-2xl mb-3">
             Cabin {name}
           </h3>
+
+          {reviewCount > 0 && (
+            <p className="text-sm text-primary-300 mb-2">
+              <span className="text-accent-400">★</span>{" "}
+              {Number(avgRating).toFixed(1)}
+              <span className="text-primary-400">
+                {" "}
+                · {reviewCount} review{reviewCount > 1 ? "s" : ""}
+              </span>
+            </p>
+          )}
 
           <div className="flex gap-3 items-center mb-2">
             <UsersIcon className="h-5 w-5 text-primary-600" />
