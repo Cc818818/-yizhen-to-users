@@ -12,6 +12,7 @@ import {
 import { computeStayPrice } from "./pricing";
 import { validateCoupon } from "./coupons";
 import { findConflictDays, toDayKey } from "./date-conflicts";
+import { isValidNationalID, NATIONAL_ID_HINT } from "./validation";
 import { supabase } from "./supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -23,8 +24,10 @@ export async function updateGuest(formData) {
   const nationalID = formData.get("nationalID");
   const [nationality, countryFlag] = formData.get("nationality").split("%");
 
-  if (!/^[a-zA-Z0-9]{6,12}$/.test(nationalID))
-    throw new Error("Please provide a valid national ID");
+  // 和服务端共用同一个校验函数：客户端为了体验提前挡一次，
+  // 这里是为了安全再挡一次（客户端那份可以被绕过）
+  if (!isValidNationalID(nationalID))
+    throw new Error(NATIONAL_ID_HINT);
 
   const updateData = { nationality, countryFlag, nationalID };
 

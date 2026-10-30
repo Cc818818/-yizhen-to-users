@@ -5,10 +5,11 @@ import { differenceInDays } from "date-fns";
 import { useReservation } from "./ReservationContext";
 import { checkCoupon, createBooking } from "../_lib/actions";
 import { computeStayPrice } from "../_lib/pricing";
+import { findConflictDays, toDayKey } from "../_lib/date-conflicts";
 import CouponField from "./CouponField";
 import SubmitButton from "./SubmitButton";
 
-function ReservationForm({ cabin, user }) {
+function ReservationForm({ cabin, user, bookedDates = [] }) {
   const { range, resetRange } = useReservation();
   const { maxCapacity, regularPrice, discount, id } = cabin;
 
@@ -36,6 +37,13 @@ function ReservationForm({ cabin, user }) {
 
   const appliedDiscount = couponResult?.ok ? couponResult.discountAmount : 0;
   const totalPrice = cabinPrice - appliedDiscount;
+
+  // 和服务端同一个纯函数：日历上已经把已订日期变灰了，
+  // 但如果用户先选了日期、随后被别人订走，这里能提前告诉他，而不是等提交炸红框
+  const conflicts = hasDates
+    ? findConflictDays({ bookedDates, startDate, endDate })
+    : [];
+  const couponBlocked = Boolean(couponResult && !couponResult.ok);
 
   const bookingData = {
     startDate,
@@ -152,13 +160,26 @@ function ReservationForm({ cabin, user }) {
           </div>
         )}
 
+        {conflicts.length > 0 && (
+          <p className="text-red-400 text-base">
+            这些日期已经被订走：
+            {conflicts.slice(0, 3).map(toDayKey).join("、")}
+            {conflicts.length > 3 ? " 等" : ""}，请换几天
+          </p>
+        )}
+
         <div className="flex justify-end items-center gap-6">
           {!hasDates ? (
             <p className="text-primary-300 text-base">
               Start by selecting dates
             </p>
           ) : (
-            <SubmitButton pendingLabel="Reserving...">Reserve now</SubmitButton>
+            <SubmitButton
+              pendingLabel="Reserving..."
+              disabled={conflicts.length > 0 || couponBlocked}
+            >
+              Reserve now
+            </SubmitButton>
           )}
         </div>
       </form>
