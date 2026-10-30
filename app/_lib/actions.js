@@ -2,8 +2,14 @@
 
 import { auth, signIn, signOut } from "./auth";
 import { differenceInDays } from "date-fns";
-import { getBookings, getCabinPrice, getSettings } from "./data-service";
+import {
+  getBookings,
+  getCabinPrice,
+  getCouponContext,
+  getSettings,
+} from "./data-service";
 import { computeStayPrice } from "./pricing";
+import { validateCoupon } from "./coupons";
 import { supabase } from "./supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -28,6 +34,48 @@ export async function updateGuest(formData) {
   if (error) throw new Error("Guest could not be updated");
 
   revalidatePath("/account/profile");
+}
+
+/**
+ * 只读：给表单里的「应用」按钮做折扣预览。
+ *
+ * ⚠️ 这个返回值【不可信】——它回到浏览器，用户能改。
+ * 真正生效的是 createBooking 里那次重新校验，两次用的是同一个 validateCoupon。
+ */
+export async function checkCoupon({ code, cabinId, numNights }) {
+  const session = await auth();
+  if (!session) return { ok: false, reason: "请先登录再使用优惠码" };
+
+  if (!code?.trim()) return { ok: false, reason: "请输入优惠码" };
+
+  const nights = Number(numNights);
+  if (!Number.isInteger(nights) || nights <= 0)
+    return { ok: false, reason: "请先选择入住日期" };
+
+  try {
+    const cabin = await getCabinPrice(cabinId);
+    const { cabinPrice } = computeStayPrice({
+      regularPrice: cabin.regularPrice,
+      discount: cabin.discount,
+      numNights: nights,
+    });
+
+    const ctx = await getCouponContext({
+      code,
+      guestId: session.user.guestId,
+    });
+
+    return validateCoupon({
+      coupon: ctx.coupon,
+      numNights: nights,
+      basePrice: cabinPrice,
+      usedCount: ctx.usedCount,
+      usedByGuest: ctx.usedByGuest,
+      isFirstBooking: ctx.isFirstBooking,
+    });
+  } catch {
+    return { ok: false, reason: "优惠码校验失败，请稍后重试" };
+  }
 }
 
 export async function createBooking(bookingData, formData) {
@@ -68,7 +116,35 @@ export async function createBooking(bookingData, formData) {
   if (!Number.isInteger(cabinPrice) || cabinPrice <= 0)
     throw new Error("金额计算异常，请稍后重试");
 
-  // 5) 白名单式构造：只写下面这些字段，
+  // 5) 优惠码（可选）：服务端重新校验。界面上"预览"的结果一律不采信
+  const rawCouponCode = String(formData.get("couponCode") ?? "").trim();
+  let couponId = null;
+  let couponDiscount = 0;
+
+  if (rawCouponCode) {
+    const ctx = await getCouponContext({
+      code: rawCouponCode,
+      guestId: session.user.guestId,
+    });
+
+    const result = validateCoupon({
+      coupon: ctx.coupon,
+      numNights,
+      basePrice: cabinPrice,
+      usedCount: ctx.usedCount,
+      usedByGuest: ctx.usedByGuest,
+      isFirstBooking: ctx.isFirstBooking,
+    });
+
+    if (!result.ok) throw new Error(result.reason);
+
+    couponId = ctx.coupon.id;
+    couponDiscount = result.discountAmount;
+  }
+
+  const totalPrice = cabinPrice - couponDiscount;
+
+  // 6) 白名单式构造：只写下面这些字段，
   //    前端塞进 bookingData 的其他键一概不会进数据库
   const newBooking = {
     startDate,
@@ -80,15 +156,42 @@ export async function createBooking(bookingData, formData) {
     numGuests: Number(formData.get("numGuests")),
     observations: formData.get("observations").slice(0, 1000),
     extrasPrice: 0,
-    totalPrice: cabinPrice,
+    totalPrice,
+    couponId,
+    couponDiscount,
     isPaid: false,
     hasBreakfast: false,
     status: "unconfirmed",
   };
 
-  const { error } = await supabase.from("bookings").insert([newBooking]);
+  const { data: createdBooking, error } = await supabase
+    .from("bookings")
+    .insert([newBooking])
+    .select("id")
+    .single();
 
   if (error) throw new Error("Booking could not be created");
+
+  // 记录优惠码使用情况。
+  // 唯一索引 (couponId, guestId) 是并发下的最后一道防线：
+  // 同一个人在另一个标签页同时下单时，这里会插失败，于是把刚建的订单撤回。
+  if (couponId) {
+    const { error: redeemError } = await supabase
+      .from("coupon_redemptions")
+      .insert([
+        {
+          couponId,
+          guestId: session.user.guestId,
+          bookingId: createdBooking.id,
+          discountAmount: couponDiscount,
+        },
+      ]);
+
+    if (redeemError) {
+      await supabase.from("bookings").delete().eq("id", createdBooking.id);
+      throw new Error("这个优惠码刚刚已被使用，请去掉优惠码后重试");
+    }
+  }
 
   revalidatePath(`/cabins/${cabinId}`);
 

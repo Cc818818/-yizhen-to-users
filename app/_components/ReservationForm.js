@@ -1,21 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { differenceInDays } from "date-fns";
 import { useReservation } from "./ReservationContext";
-import { createBooking } from "../_lib/actions";
+import { checkCoupon, createBooking } from "../_lib/actions";
 import { computeStayPrice } from "../_lib/pricing";
+import CouponField from "./CouponField";
 import SubmitButton from "./SubmitButton";
 
 function ReservationForm({ cabin, user }) {
   const { range, resetRange } = useReservation();
   const { maxCapacity, regularPrice, discount, id } = cabin;
 
+  const [couponCode, setCouponCode] = useState("");
+  const [couponResult, setCouponResult] = useState(null);
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+
   const startDate = range.from;
   const endDate = range.to;
+  const hasDates = Boolean(startDate && endDate);
 
   const numNights = differenceInDays(endDate, startDate);
   // 和 Server Action 用同一个纯函数，保证"页面显示"与"实际写库"算出来的金额一致
-  const { cabinPrice } = computeStayPrice({ regularPrice, discount, numNights });
+  const { nightlyRate, cabinPrice } = computeStayPrice({
+    regularPrice,
+    discount,
+    numNights,
+  });
+
+  // 日期或优惠码一变，之前算出来的折扣就作废了，
+  // 否则界面上会挂着一个和当前订单不匹配的旧金额
+  useEffect(() => {
+    setCouponResult(null);
+  }, [numNights, couponCode]);
+
+  const appliedDiscount = couponResult?.ok ? couponResult.discountAmount : 0;
+  const totalPrice = cabinPrice - appliedDiscount;
 
   const bookingData = {
     startDate,
@@ -26,6 +46,24 @@ function ReservationForm({ cabin, user }) {
   };
 
   const createBookingWithData = createBooking.bind(null, bookingData);
+
+  async function handleApplyCoupon() {
+    setCheckingCoupon(true);
+    try {
+      // 这里只是"预览"：服务端返回的折扣仅用于展示，
+      // 真正生效的是提交时 createBooking 里那次重新校验
+      const result = await checkCoupon({
+        code: couponCode,
+        cabinId: id,
+        numNights,
+      });
+      setCouponResult(result);
+    } catch {
+      setCouponResult({ ok: false, reason: "优惠码校验失败，请稍后重试" });
+    } finally {
+      setCheckingCoupon(false);
+    }
+  }
 
   return (
     <div className="scale-[1.01]">
@@ -45,7 +83,6 @@ function ReservationForm({ cabin, user }) {
       </div>
 
       <form
-        // action={createBookingWithData}
         action={async (formData) => {
           await createBookingWithData(formData);
           resetRange();
@@ -83,8 +120,40 @@ function ReservationForm({ cabin, user }) {
           />
         </div>
 
+        <CouponField
+          code={couponCode}
+          onCodeChange={setCouponCode}
+          onApply={handleApplyCoupon}
+          result={couponResult}
+          pending={checkingCoupon}
+          disabled={!hasDates}
+        />
+
+        {hasDates && (
+          <div className="bg-primary-950 border border-primary-800 px-6 py-4 space-y-1 text-base">
+            <p className="flex justify-between text-primary-200">
+              <span>
+                ${nightlyRate} × {numNights} nights
+              </span>
+              <span>${cabinPrice}</span>
+            </p>
+
+            {appliedDiscount > 0 && (
+              <p className="flex justify-between text-green-400">
+                <span>Promo {couponCode.trim().toUpperCase()}</span>
+                <span>&minus;${appliedDiscount}</span>
+              </p>
+            )}
+
+            <p className="flex justify-between font-semibold text-lg text-primary-100 border-t border-primary-800 pt-2 mt-2">
+              <span>Total</span>
+              <span>${totalPrice}</span>
+            </p>
+          </div>
+        )}
+
         <div className="flex justify-end items-center gap-6">
-          {!(startDate && endDate) ? (
+          {!hasDates ? (
             <p className="text-primary-300 text-base">
               Start by selecting dates
             </p>

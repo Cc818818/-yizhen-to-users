@@ -160,6 +160,68 @@ export async function getCountries() {
   }));
 }
 
+/**
+ * 一次查回校验优惠码所需的全部上下文。
+ *
+ * 为什么合成一个函数：校验要 4 样东西（券本身、总使用次数、本人是否用过、
+ * 本人是否首单），分散查会有 4 次往返，也容易漏。
+ *
+ * 注意：查不到券时返回 coupon: null 而不是 throw —— "券不存在"是正常的业务结果，
+ * 交给 validateCoupon 给出具体提示。
+ */
+export async function getCouponContext({ code, guestId }) {
+  const normalizedCode = String(code ?? "")
+    .trim()
+    .toUpperCase();
+
+  const { data: coupon, error } = await supabase
+    .from("coupons")
+    .select("*")
+    .eq("code", normalizedCode)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    throw new Error("优惠码查询失败");
+  }
+
+  if (!coupon) {
+    return {
+      coupon: null,
+      usedCount: 0,
+      usedByGuest: false,
+      isFirstBooking: false,
+    };
+  }
+
+  // 这张码总共被用过几次
+  const { count: usedCount } = await supabase
+    .from("coupon_redemptions")
+    .select("*", { count: "exact", head: true })
+    .eq("couponId", coupon.id);
+
+  // 本人用过没有
+  const { data: mine } = await supabase
+    .from("coupon_redemptions")
+    .select("id")
+    .eq("couponId", coupon.id)
+    .eq("guestId", guestId)
+    .maybeSingle();
+
+  // 本人有没有任何订单（用来判断"新客首单"）
+  const { count: bookingCount } = await supabase
+    .from("bookings")
+    .select("*", { count: "exact", head: true })
+    .eq("guestId", guestId);
+
+  return {
+    coupon,
+    usedCount: usedCount ?? 0,
+    usedByGuest: Boolean(mine),
+    isFirstBooking: (bookingCount ?? 0) === 0,
+  };
+}
+
 /////////////
 // CREATE
 
