@@ -191,7 +191,7 @@ chore(ci): 增加 GitHub Actions 流水线
 | 修复 middleware matcher | ✅ 完成 | — |
 | 修复 session 回调 Edge 报错 | ✅ 完成 | — |
 | 替换失效的国家 API | ✅ 完成 | — |
-| M1 服务端定价 | ⬜ 未开始 | — |
+| M1 服务端定价 | ✅ 完成 | 64ba9f9 / 105e83b / 64cd1b2 |
 | M2 优惠码 | ⬜ 未开始 | — |
 | M3 日期冲突校验 | ⬜ 未开始 | — |
 | M4 zod + 表单错误 | ⬜ 未开始 | — |
