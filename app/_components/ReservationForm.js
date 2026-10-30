@@ -3,6 +3,7 @@
 import { differenceInDays } from "date-fns";
 import { useReservation } from "./ReservationContext";
 import { createBooking } from "../_lib/actions";
+import { computeStayPrice } from "../_lib/pricing";
 import SubmitButton from "./SubmitButton";
 
 function ReservationForm({ cabin, user }) {
@@ -13,7 +14,8 @@ function ReservationForm({ cabin, user }) {
   const endDate = range.to;
 
   const numNights = differenceInDays(endDate, startDate);
-  const cabinPrice = numNights * (regularPrice - discount);
+  // 和 Server Action 用同一个纯函数，保证"页面显示"与"实际写库"算出来的金额一致
+  const { cabinPrice } = computeStayPrice({ regularPrice, discount, numNights });
 
   const bookingData = {
     startDate,
