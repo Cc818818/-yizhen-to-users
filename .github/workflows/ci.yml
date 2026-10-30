@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+  # 为什么这里没有 next build？
+  # 构建会在 generateStaticParams 阶段连 Supabase 取小屋列表，
+  # 而 CI 环境里没有数据库凭据（也不该有）。
+  # 想加上 build 的话，需要把生产库的只读凭据放进 GitHub Secrets。

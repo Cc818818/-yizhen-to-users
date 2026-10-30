@@ -1,8 +1,8 @@
 # Yizhen — 民宿预订官网
 
-一个面向顾客的民宿预订网站：浏览小屋、按人数筛选、选日期下单、Google 登录后在个人中心管理订单、退房后给小屋打分写评价。
+[![CI](https://github.com/Cc818818/-/actions/workflows/ci.yml/badge.svg)](https://github.com/Cc818818/-/actions/workflows/ci.yml)
 
-线上地址：_待部署_
+一个面向顾客的民宿预订网站：浏览小屋、按人数筛选、选日期下单、Google 登录后在个人中心管理订单、退房后给小屋打分写评价。
 
 ## 技术栈
 
