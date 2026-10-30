@@ -12,9 +12,14 @@ build/
 npm-debug.log*
 .vercel
 
-# 课程学习笔记（含课程作者信息，不要进公开仓库）
-docs/学习笔记-*.md
+# 本地开发脚本与个人配置
+dev.ps1
 
+# 数据库脚本与迁移（只在本地维护，不进公开仓库）
+supabase/
+supabase-setup.sql
 
-# 课程自带的参考代码，不纳入仓库（本地保留）
+# 项目内部文档与笔记
+PROJECT_RULES.md
+docs/
 starter/

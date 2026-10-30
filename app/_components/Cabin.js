@@ -36,8 +36,7 @@ function Cabin({ cabin }) {
           <li className="flex gap-3 items-center">
             <MapPinIcon className="h-5 w-5 text-primary-600" />
             <span className="text-lg">
-              Located in the heart of the{" "}
-              <span className="font-bold">Dolomites</span> (Italy)
+              Quiet valley, <span className="font-bold">2h</span> from the city
             </span>
           </li>
           <li className="flex gap-3 items-center">
