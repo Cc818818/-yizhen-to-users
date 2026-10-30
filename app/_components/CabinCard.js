@@ -14,68 +14,58 @@ function CabinCard({ cabin }) {
     reviewCount,
   } = cabin;
 
+  const price = regularPrice - discount;
+
   return (
-    <div className="flex border-primary-800 border">
-      <div className="flex-1 relative">
+    <article className="glass glass-hover overflow-hidden flex flex-col">
+      <div className="relative aspect-[16/10] bg-primary-900">
         <Image
           src={image}
           fill
           alt={`Cabin ${name}`}
-          className="object-cover border-r border-primary-800"
+          className="object-cover opacity-95"
+          sizes="(max-width: 768px) 100vw, 33vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-950/80 via-transparent to-transparent" />
       </div>
 
-      <div className="flex-grow">
-        <div className="pt-5 pb-4 px-7 bg-primary-950">
-          <h3 className="text-accent-500 font-semibold text-2xl mb-3">
-            Cabin {name}
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="text-lg font-semibold tracking-tight text-primary-50">
+            {name}
           </h3>
 
           {reviewCount > 0 && (
-            <p className="text-sm text-primary-300 mb-2">
-              <span className="text-accent-400">★</span>{" "}
-              {Number(avgRating).toFixed(1)}
-              <span className="text-primary-400">
-                {" "}
-                · {reviewCount} review{reviewCount > 1 ? "s" : ""}
-              </span>
-            </p>
+            <span className="text-xs text-primary-300 whitespace-nowrap">
+              ★ {Number(avgRating).toFixed(1)}
+              <span className="text-primary-500"> ({reviewCount})</span>
+            </span>
           )}
-
-          <div className="flex gap-3 items-center mb-2">
-            <UsersIcon className="h-5 w-5 text-primary-600" />
-            <p className="text-lg text-primary-200">
-              For up to <span className="font-bold">{maxCapacity}</span> guests
-            </p>
-          </div>
-
-          <p className="flex gap-3 justify-end items-baseline">
-            {discount > 0 ? (
-              <>
-                <span className="text-3xl font-[350]">
-                  ${regularPrice - discount}
-                </span>
-                <span className="line-through font-semibold text-primary-600">
-                  ${regularPrice}
-                </span>
-              </>
-            ) : (
-              <span className="text-3xl font-[350]">${regularPrice}</span>
-            )}
-            <span className="text-primary-200">/ night</span>
-          </p>
         </div>
 
-        <div className="bg-primary-950 border-t border-t-primary-800 text-right">
+        <p className="mt-2 text-sm text-primary-400 flex items-center gap-2">
+          <UsersIcon className="h-4 w-4" />
+          Up to {maxCapacity} guests
+        </p>
+
+        <div className="mt-5 pt-4 border-t border-white/10 flex items-end justify-between gap-3">
+          <p className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold text-primary-50">${price}</span>
+            {discount > 0 && (
+              <s className="text-xs text-primary-500">${regularPrice}</s>
+            )}
+            <span className="text-xs text-primary-500">/night</span>
+          </p>
+
           <Link
             href={`/cabins/${id}`}
-            className="border-l border-primary-800 py-4 px-6 inline-block hover:bg-accent-600 transition-all hover:text-primary-900"
+            className="pill pill-ghost !px-4 !py-2 text-xs"
           >
-            Details & reservation &rarr;
+            Details
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 

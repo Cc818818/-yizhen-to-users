@@ -51,39 +51,43 @@ function DateSelector({ settings, cabin, bookedDates }) {
         }
       />
 
-      <div className="flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]">
-        <div className="flex items-baseline gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 rounded-2xl border border-white/10 bg-white/[0.03]">
+        <div className="flex flex-wrap items-baseline gap-5">
           <p className="flex gap-2 items-baseline">
             {discount > 0 ? (
               <>
-                <span className="text-2xl">${regularPrice - discount}</span>
-                <span className="line-through font-semibold text-primary-700">
+                <span className="text-2xl font-semibold text-primary-50">
+                  ${regularPrice - discount}
+                </span>
+                <span className="line-through text-primary-500">
                   ${regularPrice}
                 </span>
               </>
             ) : (
-              <span className="text-2xl">${regularPrice}</span>
+              <span className="text-2xl font-semibold text-primary-50">
+                ${regularPrice}
+              </span>
             )}
-            <span className="">/night</span>
+            <span className="text-sm text-primary-500">/night</span>
           </p>
           {numNights ? (
             <>
-              <p className="bg-accent-600 px-3 py-2 text-2xl">
-                <span>&times;</span> <span>{numNights}</span>
+              <p className="rounded-lg bg-white/10 px-3 py-1.5 text-xl text-primary-100">
+                <span className="text-primary-400">&times;</span>{" "}
+                <span>{numNights}</span>
               </p>
-              <p>
-                <span className="text-lg font-bold uppercase">Total</span>{" "}
-                <span className="text-2xl font-semibold">${cabinPrice}</span>
+              <p className="flex items-baseline gap-2">
+                <span className="eyebrow">Total</span>{" "}
+                <span className="text-2xl font-semibold text-primary-50">
+                  ${cabinPrice}
+                </span>
               </p>
             </>
           ) : null}
         </div>
 
         {range.from || range.to ? (
-          <button
-            className="border border-primary-800 py-2 px-4 text-sm font-semibold"
-            onClick={resetRange}
-          >
+          <button className="pill pill-ghost !px-4 !py-2 text-xs" onClick={resetRange}>
             Clear
           </button>
         ) : null}

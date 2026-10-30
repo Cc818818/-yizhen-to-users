@@ -4,15 +4,18 @@ import logo from "@/public/logo.png";
 
 function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-4 z-10">
+    <Link href="/" className="flex items-center gap-2.5 z-10 shrink-0">
       <Image
         src={logo}
-        height="60"
+        height="34"
+        width="34"
         quality={100}
-        width="60"
         alt="Yizhen logo"
+        className="rounded-full"
       />
-      <span className="text-xl font-semibold text-primary-100">Yizhen</span>
+      <span className="text-[15px] font-semibold tracking-tight text-primary-50">
+        Yizhen
+      </span>
     </Link>
   );
 }

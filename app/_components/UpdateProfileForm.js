@@ -18,7 +18,7 @@ function UpdateProfileForm({ guest, children }) {
   return (
     <form
       action={updateGuest}
-      className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col"
+      className="glass p-6 sm:p-8 flex flex-col gap-6"
     >
       <div className="space-y-2">
         <label>Full name</label>
@@ -26,7 +26,7 @@ function UpdateProfileForm({ guest, children }) {
           disabled
           defaultValue={fullName}
           name="fullName"
-          className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400"
+          className="field"
         />
       </div>
 
@@ -36,7 +36,7 @@ function UpdateProfileForm({ guest, children }) {
           disabled
           defaultValue={email}
           name="email"
-          className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400"
+          className="field"
         />
       </div>
 
@@ -61,7 +61,7 @@ function UpdateProfileForm({ guest, children }) {
           value={nationalIDInput}
           onChange={(e) => setNationalIDInput(e.target.value)}
           name="nationalID"
-          className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
+          className="field"
         />
         <p className={`text-base ${showError ? "text-red-400" : "text-primary-300"}`}>
           {NATIONAL_ID_HINT}

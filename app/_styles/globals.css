@@ -2,14 +2,168 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: theme("colors.primary.950");
+    color: theme("colors.primary.100");
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 大标题收紧字距、小标签放开字距 —— 这两个规则决定了整站的气质 */
+  h1,
+  h2 {
+    letter-spacing: -0.04em;
+  }
+}
+
 @layer components {
+  /* ---------- 背景光晕 + 极细网格 ---------- */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .aurora::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -35%;
+    width: 140vw;
+    height: 110vh;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      ellipse at 50% 40%,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0.025) 42%,
+      transparent 68%
+    );
+    filter: blur(8px);
+  }
+
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.026) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.026) 1px,
+        transparent 1px
+      );
+    background-size: 80px 80px;
+    -webkit-mask-image: radial-gradient(
+      ellipse at 50% 8%,
+      #000 28%,
+      transparent 72%
+    );
+    mask-image: radial-gradient(ellipse at 50% 8%, #000 28%, transparent 72%);
+  }
+
+  /* ---------- 玻璃卡片 ---------- */
+  .glass {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 22px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .glass-hover {
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+
+  .glass-hover:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-3px);
+  }
+
+  /* ---------- 药丸按钮 ---------- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .pill-solid {
+    background: theme("colors.accent.500");
+    color: theme("colors.primary.950");
+    border: 1px solid transparent;
+  }
+
+  .pill-solid:hover {
+    background: theme("colors.accent.600");
+  }
+
+  .pill-ghost {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: theme("colors.primary.100");
+  }
+
+  .pill-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---------- 输入框 ---------- */
+  .field {
+    width: 100%;
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+    color: theme("colors.primary.100");
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .field::placeholder {
+    color: theme("colors.primary.500");
+  }
+
+  .field:focus {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .field:disabled {
+    background: rgba(255, 255, 255, 0.02);
+    color: theme("colors.primary.500");
+    cursor: not-allowed;
+  }
+
+  /* ---------- 小标签 ---------- */
+  .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: theme("colors.primary.500");
+  }
+
+  /* ---------- 加载动画 ---------- */
   .spinner {
     margin: 3.2rem auto 1.6rem;
     width: 60px;
     aspect-ratio: 1;
     border-radius: 50%;
     border: 8px solid theme("colors.primary.900");
-    border-right-color: theme("colors.primary.200");
+    border-right-color: theme("colors.accent.500");
     animation: rotate 1s infinite linear;
   }
 
@@ -18,7 +172,7 @@
     width: 20px;
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 2px solid theme("colors.primary.200");
+    border: 2px solid theme("colors.accent.500");
     border-right-color: transparent;
     animation: rotate 1s infinite linear;
   }
@@ -30,11 +184,11 @@
   }
 }
 
-/* For data picker */
-
+/* For date picker */
 .rdp {
   --rdp-cell-size: 32px !important;
   --rdp-accent-color: theme("colors.accent.500") !important;
   --rdp-background-color: theme("colors.accent.600") !important;
+  --rdp-color: theme("colors.primary.100") !important;
   margin: 0 !important;
 }

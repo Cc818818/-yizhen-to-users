@@ -27,10 +27,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${josefin.className} antialiased bg-primary-950 text-primary-100 min-h-screen flex flex-col relative`}
       >
+        {/* 背景光晕 + 极细网格，纯装饰 */}
+        <div className="aurora" aria-hidden="true" />
+
         <Header />
 
-        <div className="flex-1 px-8 py-12 grid">
-          <main className="max-w-7xl mx-auto w-full">
+        <div className="flex-1 px-5 sm:px-8 py-10 grid">
+          <main className="max-w-6xl mx-auto w-full">
             <ReservationProvider>{children}</ReservationProvider>
           </main>
         </div>

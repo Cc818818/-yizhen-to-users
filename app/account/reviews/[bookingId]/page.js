@@ -43,7 +43,7 @@ export default async function Page({ params }) {
   const backLink = (
     <Link
       href="/account/reservations"
-      className="inline-block bg-accent-500 px-6 py-3 text-primary-800 font-semibold hover:bg-accent-600 transition-all"
+      className="pill pill-solid"
     >
       Back to my reservations
     </Link>

@@ -17,17 +17,20 @@ export default function Page({ searchParams }) {
 
   return (
     <div>
-      <h1 className="text-4xl mb-5 text-accent-400 font-medium">
-        Our cabins
-      </h1>
-      <p className="text-primary-200 text-lg mb-10">
-        Small wooden cabins in a quiet valley. Wake up to mountain views, spend
-        the day walking the forest trails, and end it in your own hot tub under
-        the stars. No crowds, no schedule &mdash; just a slow few days away from
-        home.
-      </p>
+      <div className="mb-10">
+        <p className="eyebrow mb-3">Our cabins</p>
+        <h1 className="text-3xl sm:text-4xl font-medium tracking-tight text-primary-50">
+          Six cabins, six views
+        </h1>
+        <p className="mt-4 max-w-2xl text-primary-300">
+          Small wooden cabins in a quiet valley. Wake up to mountain views, spend
+          the day walking the forest trails, and end it in your own hot tub under
+          the stars. No crowds, no schedule &mdash; just a slow few days away
+          from home.
+        </p>
+      </div>
 
-      <div className="flex justify-end mb-8">
+      <div className="flex justify-start sm:justify-end mb-8">
         <Filter />
       </div>
 

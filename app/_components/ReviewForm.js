@@ -20,7 +20,7 @@ export default function ReviewForm({ bookingId, cabinName }) {
   return (
     <form
       action={createReview}
-      className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col"
+      className="glass p-6 sm:p-8 flex flex-col gap-6"
     >
       <input type="hidden" name="bookingId" value={bookingId} />
       {/* 星星的状态存在 React 里，提交时靠这个隐藏域带过去 */}
@@ -61,7 +61,7 @@ export default function ReviewForm({ bookingId, cabinName }) {
           rows={4}
           maxLength={1000}
           placeholder="What did you like? What could be better?"
-          className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
+          className="field"
         />
       </div>
 

@@ -16,7 +16,7 @@ function Filter() {
   }
 
   return (
-    <div className="border border-primary-800 flex">
+    <div className="flex flex-wrap gap-1 p-1 rounded-pill border border-white/10 bg-white/[0.03]">
       <Button
         filter="all"
         handleFilter={handleFilter}
@@ -50,10 +50,14 @@ function Filter() {
 }
 
 function Button({ filter, handleFilter, activeFilter, children }) {
+  const active = filter === activeFilter;
+
   return (
     <button
-      className={`px-5 py-2 hover:bg-primary-700 ${
-        filter === activeFilter ? "bg-primary-700 text-primary-50" : ""
+      className={`px-4 py-1.5 rounded-pill text-xs font-medium transition-colors ${
+        active
+          ? "bg-accent-500 text-primary-950"
+          : "text-primary-300 hover:text-primary-50 hover:bg-white/5"
       }`}
       onClick={() => handleFilter(filter)}
     >

@@ -39,8 +39,8 @@ export default async function Page({ params }) {
         <CabinReviews cabin={cabin} />
       </Suspense>
 
-      <div>
-        <h2 className="text-5xl font-semibold text-center mb-10 text-accent-400">
+      <div className="mt-12">
+        <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-center mb-10 text-primary-50">
           Reserve {cabin.name} today. Pay on arrival.
         </h2>
 

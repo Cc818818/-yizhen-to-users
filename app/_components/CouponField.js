@@ -16,7 +16,9 @@ export default function CouponField({
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor="couponCode">Promo code</label>
+      <label htmlFor="couponCode" className="block text-sm text-primary-400">
+        Promo code
+      </label>
 
       <div className="flex gap-3">
         <input
@@ -27,27 +29,27 @@ export default function CouponField({
           disabled={disabled}
           placeholder="WELCOME10"
           autoComplete="off"
-          className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm uppercase placeholder:text-primary-700 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400"
+          className="field uppercase placeholder:normal-case disabled:cursor-not-allowed"
         />
 
         <button
           type="button"
           onClick={onApply}
           disabled={disabled || pending || !code.trim()}
-          className="shrink-0 bg-accent-500 px-6 py-3 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300"
+          className="pill pill-ghost shrink-0 !py-3 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Checking..." : "Apply"}
         </button>
       </div>
 
       {result?.ok && (
-        <p className="text-green-400 text-base">
+        <p className="text-sm text-[#9ad19a]">
           Promo applied — you save ${result.discountAmount}
         </p>
       )}
 
       {result && !result.ok && (
-        <p className="text-red-400 text-base">{result.reason}</p>
+        <p className="text-sm text-[#e0a0a0]">{result.reason}</p>
       )}
     </div>
   );

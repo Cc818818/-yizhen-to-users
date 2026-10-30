@@ -74,20 +74,18 @@ function ReservationForm({ cabin, user, bookedDates = [] }) {
   }
 
   return (
-    <div className="scale-[1.01]">
-      <div className="bg-primary-800 text-primary-300 px-16 py-2 flex justify-between items-center">
-        <p>Logged in as</p>
-
-        <div className="flex gap-4 items-center">
+    <div className="glass overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 text-sm text-primary-400">
+        <span>Logged in as</span>
+        <span className="flex items-center gap-3 text-primary-200">
           <img
-            // Important to display google profile images
             referrerPolicy="no-referrer"
-            className="h-8 rounded-full"
+            className="h-7 w-7 rounded-full object-cover"
             src={user.image}
             alt={user.name}
           />
-          <p>{user.name}</p>
-        </div>
+          {user.name}
+        </span>
       </div>
 
       <form
@@ -95,36 +93,40 @@ function ReservationForm({ cabin, user, bookedDates = [] }) {
           await createBookingWithData(formData);
           resetRange();
         }}
-        className="bg-primary-900 py-10 px-16 text-lg flex gap-5 flex-col"
+        className="p-6 sm:p-8 flex flex-col gap-6"
       >
-        <div className="space-y-2">
-          <label htmlFor="numGuests">How many guests?</label>
-          <select
-            name="numGuests"
-            id="numGuests"
-            className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
-            required
+        <div>
+          <label
+            htmlFor="numGuests"
+            className="block text-sm text-primary-400 mb-2"
           >
+            How many guests?
+          </label>
+          <select name="numGuests" id="numGuests" className="field" required>
             <option value="" key="">
               Select number of guests...
             </option>
             {Array.from({ length: maxCapacity }, (_, i) => i + 1).map((x) => (
-              <option value={x} key={x}>
+              <option value={x} key={x} className="bg-primary-900">
                 {x} {x === 1 ? "guest" : "guests"}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="observations">
+        <div>
+          <label
+            htmlFor="observations"
+            className="block text-sm text-primary-400 mb-2"
+          >
             Anything we should know about your stay?
           </label>
           <textarea
             name="observations"
             id="observations"
-            className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
-            placeholder="Any pets, allergies, special requirements, etc.?"
+            rows={3}
+            className="field"
+            placeholder="Pets, allergies, late arrival…"
           />
         </div>
 
@@ -138,8 +140,8 @@ function ReservationForm({ cabin, user, bookedDates = [] }) {
         />
 
         {hasDates && (
-          <div className="bg-primary-950 border border-primary-800 px-6 py-4 space-y-1 text-base">
-            <p className="flex justify-between text-primary-200">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm">
+            <p className="flex justify-between text-primary-300">
               <span>
                 ${nightlyRate} × {numNights} nights
               </span>
@@ -147,13 +149,13 @@ function ReservationForm({ cabin, user, bookedDates = [] }) {
             </p>
 
             {appliedDiscount > 0 && (
-              <p className="flex justify-between text-green-400">
+              <p className="flex justify-between mt-2 text-[#9ad19a]">
                 <span>Promo {couponCode.trim().toUpperCase()}</span>
                 <span>&minus;${appliedDiscount}</span>
               </p>
             )}
 
-            <p className="flex justify-between font-semibold text-lg text-primary-100 border-t border-primary-800 pt-2 mt-2">
+            <p className="flex justify-between items-baseline mt-4 pt-4 border-t border-white/10 text-lg font-semibold text-primary-50">
               <span>Total</span>
               <span>${totalPrice}</span>
             </p>
@@ -161,18 +163,16 @@ function ReservationForm({ cabin, user, bookedDates = [] }) {
         )}
 
         {conflicts.length > 0 && (
-          <p className="text-red-400 text-base">
+          <p className="text-sm text-[#e0a0a0]">
             这些日期已经被订走：
             {conflicts.slice(0, 3).map(toDayKey).join("、")}
             {conflicts.length > 3 ? " 等" : ""}，请换几天
           </p>
         )}
 
-        <div className="flex justify-end items-center gap-6">
+        <div className="flex justify-end">
           {!hasDates ? (
-            <p className="text-primary-300 text-base">
-              Start by selecting dates
-            </p>
+            <p className="text-sm text-primary-500">Start by selecting dates</p>
           ) : (
             <SubmitButton
               pendingLabel="Reserving..."
