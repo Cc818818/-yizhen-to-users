@@ -4,12 +4,14 @@ import { auth, signIn, signOut } from "./auth";
 import { differenceInDays } from "date-fns";
 import {
   getBookings,
+  getBookedDatesByCabinId,
   getCabinPrice,
   getCouponContext,
   getSettings,
 } from "./data-service";
 import { computeStayPrice } from "./pricing";
 import { validateCoupon } from "./coupons";
+import { findConflictDays, toDayKey } from "./date-conflicts";
 import { supabase } from "./supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -116,7 +118,18 @@ export async function createBooking(bookingData, formData) {
   if (!Number.isInteger(cabinPrice) || cabinPrice <= 0)
     throw new Error("金额计算异常，请稍后重试");
 
-  // 5) 优惠码（可选）：服务端重新校验。界面上"预览"的结果一律不采信
+  // 5) 日期冲突：日历上把已订日期变灰了，但那只发生在浏览器里，
+  //    绕过界面直接提交仍然能订到别人已经订走的日期
+  const bookedDates = await getBookedDatesByCabinId(cabinId);
+  const conflicts = findConflictDays({ bookedDates, startDate, endDate });
+
+  if (conflicts.length > 0) {
+    const preview = conflicts.slice(0, 3).map(toDayKey).join("、");
+    const suffix = conflicts.length > 3 ? " 等" : "";
+    throw new Error(`这些日期已经被订走：${preview}${suffix}，请换几天再试`);
+  }
+
+  // 6) 优惠码（可选）：服务端重新校验。界面上"预览"的结果一律不采信
   const rawCouponCode = String(formData.get("couponCode") ?? "").trim();
   let couponId = null;
   let couponDiscount = 0;
@@ -144,7 +157,7 @@ export async function createBooking(bookingData, formData) {
 
   const totalPrice = cabinPrice - couponDiscount;
 
-  // 6) 白名单式构造：只写下面这些字段，
+  // 7) 白名单式构造：只写下面这些字段，
   //    前端塞进 bookingData 的其他键一概不会进数据库
   const newBooking = {
     startDate,

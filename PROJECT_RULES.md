@@ -113,6 +113,10 @@
   （这个坑已经踩了两次——表建好了、数据也插了，但 anon key 读不到也写不进，
   报错是 `42501 new row violates row-level security policy`，或者**静默返回空数组**）
 - 迁移脚本一律写成**幂等**的（`if not exists` / `on conflict do nothing`），可以重复执行
+- ⚠️ **日期时区问题（M6 部署前必须处理）**：`startDate` / `endDate` 存的是 `timestamptz`，
+  而日历和 `findConflictDays` 都按"服务器本地时区"归一化。
+  本地开发（客户端与服务器同一台机器）没问题；但部署到 UTC 服务器 + 东八区用户，
+  可能出现错一天。彻底做法是把日期改成 `date` 类型、前端只传 `"YYYY-MM-DD"` 字符串。
 
 ### 4.7 界面
 
@@ -198,7 +202,7 @@ chore(ci): 增加 GitHub Actions 流水线
 | 替换失效的国家 API | ✅ 完成 | — |
 | M1 服务端定价 | ✅ 完成 | 64ba9f9 / 105e83b / 64cd1b2 |
 | M2 优惠码 | ✅ 完成 | 见下一次提交 |
-| M3 日期冲突校验 | ⬜ 未开始 | — |
+| M3 日期冲突校验 | ✅ 完成 | 见下一次提交 |
 | M4 zod + 表单错误 | ⬜ 未开始 | — |
 | M5 评价与评分 | ⬜ 未开始 | — |
 | M6 部署 Vercel | ⬜ 未开始 | — |
