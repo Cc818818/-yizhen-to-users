@@ -31,8 +31,11 @@ export async function getCabinPrice(id) {
     .eq("id", id)
     .single();
 
+  // 必须抛错：静默返回 null 会让调用方算出 NaN，
+  // 最后把 NaN 写进数据库，变成一条永远说不清的脏数据
   if (error) {
     console.error(error);
+    throw new Error("小屋价格读取失败");
   }
 
   return data;
