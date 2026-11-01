@@ -7,6 +7,19 @@
 **技术栈**：Next.js 14 (App Router) · React 18 · Tailwind CSS · Supabase (Postgres) · NextAuth v5 · Vitest · GitHub Actions
 
 <!-- 截图区：SHOTS_START -->
+## 界面截图
+
+**首页**
+
+<img src=".github/assets/home.png" width="880" alt="Home page" />
+
+**小屋列表** —— 按人数筛选，筛选条件写入 URL，可分享、刷新不丢失
+
+<img src=".github/assets/cabins.png" width="880" alt="Cabins list with filter" />
+
+**小屋详情** —— 图片与介绍、已退房客人的评分与评价、下方是日历与预订表单
+
+<img src=".github/assets/cabin-detail.png" width="880" alt="Cabin detail with reviews" />
 <!-- 截图区：SHOTS_END -->
 
 ---
